@@ -2,7 +2,6 @@ import os
 import random
 import base64
 import requests
-from duckduckgo_search import DDGS
 from dotenv import load_dotenv
 import streamlit as st
 
@@ -25,19 +24,17 @@ def get_key():
 
 def web_search(query, num=10):
     try:
+        headers = {"User-Agent": "Mozilla/5.0"}
+        r = requests.get(f"https://html.duckduckgo.com/html/?q={query}", headers=headers, timeout=10)
         results = []
-        with DDGS() as ddgs:
-            for r in ddgs.text(query, max_results=num):
-                results.append({
-                    "title": r.get("title", "No title"),
-                    "snippet": r.get("body", "No snippet"),
-                    "link": r.get("href", "#")
-                })
+        for line in r.text.split("\n"):
+            if 'class="result__title"' in line or 'class="result__snippet"' in line:
+                text = line.split(">")[1].split("<")[0] if ">" in line else ""
+                if text and len(results) < num:
+                    results.append({"title": text, "snippet": "", "link": "#"})
         return results if results else [{"title": "No results", "snippet": "", "link": "#"}]
     except Exception as e:
         return [{"title": "Search error", "snippet": str(e), "link": "#"}]
-
-st.set_page_config(page_title="STRAFE", initial_sidebar_state="collapsed")
 
 hide_streamlit_style = """
 <style>
@@ -47,12 +44,14 @@ header {visibility: hidden;}
 .stApp { background: #0a0a0f; }
 </style>
 """
+
+st.set_page_config(page_title="STRAFE", initial_sidebar_state="collapsed")
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-st.title(" STRAFE")
+st.title("⚡ STRAFE")
 st.caption("Llama-3.2 Vision + Web Search | Direct & Raw")
 
 uploaded = st.file_uploader("📷 Upload Image (optional)", type=["png", "jpg", "jpeg"])
@@ -85,7 +84,7 @@ if st.button(" SEND", use_container_width=True):
             "max_tokens": 1024
         }
         
-        with st.spinner("⚡ STRAFE is thinking..."):
+        with st.spinner(" STRAFE is thinking..."):
             r = requests.post(URL, json=payload, headers=headers, timeout=60)
             result = r.json()
             response_text = result["choices"][0]["message"]["content"]
