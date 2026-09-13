@@ -1,11 +1,15 @@
 import streamlit as st
-st.markdown("""
-<style>
-footer {visibility: hidden;}
-#MainMenu {visibility: hidden;}
-</style>
-""", unsafe_allow_html=True)
-st.title("🎈 My new app")
-st.write(
-    "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
+
+st.set_page_config(
+    page_title="Your App Title",
+    initial_sidebar_state="collapsed"
 )
+
+hide_streamlit_style = """
+<style>
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+</style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
